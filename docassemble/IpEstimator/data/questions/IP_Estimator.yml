@@ -1,0 +1,350 @@
+---
+include:
+  - docassemble.AssemblyLine:al_package.yml
+---
+metadata:
+  title: |
+    IP Estimator
+  short title: |
+    IP Estimator
+  authors:
+    - Ian Eisaman
+    - Michael Ruccolo
+    - Shuoqi (Jason) Zhang
+---
+mandatory: True
+comment: |
+  This contains metadata that will not be overwritten if this YAML file is included in another.
+  file. Each file gets its own key in the interview_metadata dictionary.
+  Most keys are not currently used at runtime, other than "allowed courts".
+code: |
+  interview_metadata
+  if not defined("interview_metadata['IP_Estimator']"):
+    interview_metadata.initializeObject("IP_Estimator")
+    interview_metadata["IP_Estimator"].update({
+      "al_weaver_version": "1.4.0",
+      "generated on": "2021-11-08",
+      "title": "IP Estimator",
+      "short title": "IP Estimator",
+      "description": "This IP Estimator can assess the fee to be paid by an inventor for filing a patent. The patent cost calculator calculates official fee as well as professional fee and translation fee to be paid for filing the patent.",
+      "original_form": "",
+      "allowed courts": [
+      ],
+      "categories": [
+      ],        
+      "logic block variable": "interview_order_IP_Estimator",
+      "attachment block variable": "IP_Estimator_attachment",
+      "typical role": "plaintiff",
+    })
+---
+code: |
+  interview_metadata['main_interview_key'] =  'IP_Estimator'
+---
+code: |
+  # This controls the default country and list of states in address field questions
+  AL_DEFAULT_COUNTRY = "US"
+---
+code: |
+  # This controls the default state in address field questions
+  AL_DEFAULT_STATE = "MA"
+---
+code: |
+  github_repo_name =  'docassemble-IpEstimator'
+---
+code: |
+  interview_short_title = "Get an IP Estimate"
+---
+code: |
+  al_form_type = 'other'
+---
+objects:
+  - users: ALPeopleList.using(ask_number=True,target_number=1)
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_IP_Estimator
+code: |
+  # Set the allowed courts for this interview
+  # allowed_courts = interview_metadata["IP_Estimator"]["allowed courts"]
+  # user_role = 'plaintiff'
+  What_is_the_type_of_patent_you_are_protecting
+  if patent_type == "utility_model":
+    Utility_exit
+  What_is_your_companys_legal_status
+  What_type_of_invention_you_are_protecting
+  set_progress(25)
+  What_is_the_number_of_drawings_of_your_invention
+  What_is_the_number_of_claims_of_your_invention
+  What_stages_or_categories_you_want_to_exclude
+  set_progress(50)
+  # granting_cost
+  # ^ not sure how that got there
+  interview_order_IP_Estimator = True
+---
+###################### Main order ######################
+comment: |
+  This block includes the logic for standalone interviews.
+  Delete mandatory: True to include in another interview
+mandatory: True
+code: |
+  al_intro_screen
+  IP_Estimator_intro
+  interview_order_IP_Estimator
+  signature_date
+    # TODO: What is signature_date?
+  # Save anonymized interview statistics (customize the saved data below)
+  IP_Estimator_download
+---
+comment: |
+  This question is used to introduce your interview. Please customize
+id: IP_Estimator
+continue button field: IP_Estimator_intro
+question: |
+  IP Estimator
+subquestion: |
+  This IP Estimator can assess the fee to be paid for filing your patent. The patent cost calculator calculates the official fee and professional fee to be paid.
+  
+  After you input relevant information for your invention, estimates are then automatically calculated, and presented in summary format. The final summary estimate can be downloaded or emailed.
+---
+id: What is the type of patent you are protecting?
+question: |
+  What is the type of patent you are protecting?
+fields:
+  - Patent Type: patent_type
+    input type: radio
+    choices:
+      - (Non-Provisional) Patent: "non_provisional_patent"
+        help: |
+          A non-provisional patent application enters the queue for examination.  It normally takes about 18 months till the first examination occurs.
+      - Provisional Patent: "provisional_patent"
+        help: |
+          A provisional patent application is designed to delay examination costs. In doing so, you will also delay the grant of any patent.
+      - Utility Model: "utility_model"
+        help: |
+          Utility patent protects functional features.
+      - Design Patent: "design_patent"
+        help: |
+          Design patent protects looks of the product.
+continue button field: What_is_the_type_of_patent_you_are_protecting
+---
+id: What is your company s legal status
+question: |
+  What is your company’s legal status?
+subquestion: |
+  Tip: If you are a sole proprietorship, you are likely a small entity or micro entity.
+fields:
+  - Entity Type: entity_type
+    input type: radio
+    choices:
+      - Large Entity: "large_entity"
+        help: |
+          Everyone is a large entity unless you qualify as a small entity or a micro entity.
+      - Small Entity: "small_entity"
+        help: |
+          A small entity is an entity with less than 500 employees including part time employees.
+      - Micro Entity: "micro_entity"
+        help: |
+          A micro entity is an entity that is a small entity, plus has filed less than four patent applications and reported less than 3 times the median income in the United States.
+continue button field: What_is_your_companys_legal_status
+---
+id: What type of invention you are protecting
+question: |
+  What type of invention you are protecting?
+fields:
+  - Type: invention_type
+    input type: radio
+    choices:
+      - Mechanical: "mechanical"
+        help: |
+          Mechanical inventions include consumer products, industrial machinery, and tools.
+      - Electrical: "electrical"
+        help: |
+          Electrical inventions include circuits or devices with a circuit board.
+      - Software: "software"
+        help: |
+          Software inventions are programs that can be run entirely on a computer.
+      - Biochemical: "biochemical"
+        help: |
+          Biochemical inventions are any inventions relating to biology or chemistry.
+continue button field: What_type_of_invention_you_are_protecting
+---
+id: What is the number of drawings of your invention
+question: |
+  What is the number of drawings of your invention?
+subquestion: |
+  For simple inventions, you can estimate about 1-4 figures. For medium complexity inventions, you can estimate 5-10 figures. Complex inventions would require more than 10 figures. Each figure is generally one sheet.
+fields:
+  - Number of Drawings: number_drawings
+    datatype: integer
+    help: |
+      You will have to pay for professional drawings. Technically you can do the drawings yourself, but if most drawings made by individuals cannot pass the USPTO’s requirement.
+continue button field: What_is_the_number_of_drawings_of_your_invention
+---
+id: What is the number of claims of your invention
+question: |
+  What is the number of claims of your invention?
+subquestion: |
+  You will need to consult with an attorney to confirm the total number of claims. If you do not currently know the number of claims on your application, enter "20" which is a generous estimate.
+fields:
+  - Number of Claims: number_claims
+    datatype: integer
+continue button field: What_is_the_number_of_claims_of_your_invention
+---
+id: What stages or categories you want to exclude
+question: |
+  What stages or categories you want to exclude?
+subquestion: |
+  Are there any fee categories you would like to exclude from the final total? (default: no)
+fields:
+  - Examination Fees: exclude_examination
+    datatype: yesno
+  - Granting Fees: exclude_granting
+    datatype: yesno
+  - Official Fees: exclude_official
+    datatype: yesno
+continue button field: What_stages_or_categories_you_want_to_exclude
+---
+code: |
+  signature_fields = []
+  
+  # define form fields
+  filing_official_fee = 0
+  filing_attorney_fee = 0
+  drawing_cost = 0
+  filing_cost = 0
+  exam_official_fee = 0
+  exam_attorney_fee = 0
+  exam_cost = 0
+  granting_official_fee = 0
+  granting_attorney_fee = 0
+  granting_cost = 0
+  total_cost = 0
+  
+  #ATTACHMENTS
+  
+  # Question 1
+  
+  if patent_type == "provisional_patent":
+    filing_official_fee += 280
+    filing_attorney_fee += 1000
+  elif patent_type == "non_provisional_patent":
+    filing_official_fee += 1020
+    exam_official_fee += 800
+    granting_official_fee += 1200
+    granting_attorney_fee += 500
+    filing_attorney_fee += 1000
+  elif patent_type == "utility_model":
+    pass
+  elif patent_type == "design_patent":
+    filing_official_fee += 190
+    exam_official_fee += 320
+    granting_official_fee += 370
+    granting_attorney_fee += 500
+    filing_attorney_fee += 2000
+  
+  # Question 2
+  if entity_type == "large_entity":
+    # entire fee schedule
+    pass
+  elif entity_type == "small_entity":
+    # 50% of fee schedule
+    filing_official_fee = filing_official_fee / 2
+    exam_official_fee = exam_official_fee / 2
+    granting_official_fee = granting_official_fee / 2
+  elif entity_type == "micro_entity":
+    # 25% of fee schedule
+    filing_official_fee = filing_official_fee / 4
+    exam_official_fee = exam_official_fee / 4
+    granting_official_fee = granting_official_fee / 4
+  
+  # Question 3
+  if patent_type == "non_provisional_patent":
+    if invention_type == "mechanical":
+      exam_attorney_fee += 4000
+    elif invention_type == "electrical":
+      exam_attorney_fee += 4000
+    elif invention_type == "software":
+      exam_attorney_fee += 7000
+    elif invention_type == "biochemical":
+      exam_attorney_fee += 12000
+  
+  # Question 4
+  drawing_cost += 50 * number_drawings
+  
+  # Question 5
+  if patent_type != "design_patent":
+    if number_claims > 20:
+      if entity_type == "large_entity":
+        filing_official_fee += 50 * (number_claims - 20)
+      elif entity_type == "small_entity":
+        filing_official_fee += 25 * (number_claims - 20)
+      elif entity_type == "micro_entity":
+        filing_official_fee += 12.5 * (number_claims - 20)
+  
+  # Question 6
+  if exclude_examination:
+    exam_official_fee = 0
+    exam_attorney_fee = 0
+    exam_cost = 0
+  if exclude_granting:
+    granting_official_fee = 0
+    granting_attorney_fee = 0
+    granting_cost = 0
+  if exclude_official:
+    filing_official_fee = 0
+    filing_attorney_fee = 0
+    drawing_cost = 0
+    filing_cost = 0
+  
+  # Totals
+  filing_cost = filing_official_fee + filing_attorney_fee + drawing_cost
+  exam_cost = exam_official_fee + exam_attorney_fee
+  granting_cost = granting_official_fee + granting_attorney_fee
+  
+  total_cost = filing_cost + exam_cost + granting_cost
+  
+  # eliminate decimal places
+  all_fields = (filing_official_fee, filing_attorney_fee, drawing_cost, filing_cost, exam_official_fee, exam_attorney_fee, exam_cost, granting_official_fee, granting_attorney_fee, granting_cost, total_cost)
+  for field in all_fields:
+    field = int(field)
+---
+id: Utility exit
+event: Utility_exit
+question: |
+  Utility model is not protected in the United States
+subquestion: |
+  Unfortunately this form is not relevant to you.
+decoration: hand-paper
+---
+id: download IP_Estimator
+event: IP_Estimator_download
+question: |
+  Your form is ready to download.
+subquestion: |
+  Thank you ${users}. Your form is ready to download and deliver.
+  
+  View, download and send your form below. Click the "Make changes" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_IP_Estimator'), label='Make changes', color='info') }
+  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=True) }
+
+progress: 100
+#${ al_user_bundle.download_list_html(format="docx") }
+---
+objects:
+  - IP_Estimator_attachment: ALDocument.using(title="IP Estimator", filename="Outline.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+---
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[IP_Estimator_attachment], filename="IP_Estimator_package.pdf", title="All forms to download for your records", enabled=True)
+  - al_recipient_bundle: ALDocumentBundle.using(elements=[IP_Estimator_attachment], filename="IP_Estimator_package.pdf", title="All forms to download for your records", enabled=True)
+---
+attachments:
+  - name: IP Estimator attachment
+    filename: IP_Estimator     
+    variable name: IP_Estimator_attachment[i]        
+    docx template file: Outline.docx
